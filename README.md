@@ -74,6 +74,20 @@ The app should help users:
 - Vercel
 - Supabase
 
+## Current MVP status
+
+Implemented in code:
+- authentication with Supabase
+- real dashboard loading activities, attempts, and logs
+- create activity and auto-start first attempt
+- quick logging (`+1`, `+5`, `+10`)
+- auto-complete attempt when progress reaches 100
+- start next attempt from the dashboard
+
+Database schema:
+- run `db/migrations/0001_project100.sql` in Supabase SQL editor
+- ensure `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are set
+
 ## Architecture direction
 
 - Next.js App Router

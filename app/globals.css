@@ -8,6 +8,8 @@
   --border: #d8deea;
   --primary: #101826;
   --primary-foreground: #f8fbff;
+  --font-sans-stack: "Segoe UI", "Avenir Next", "Helvetica Neue", sans-serif;
+  --font-mono-stack: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
 }
 
 @theme inline {
@@ -18,15 +20,17 @@
   --color-border: var(--border);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-sans-stack);
+  --font-mono: var(--font-mono-stack);
 }
 
 body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), sans-serif;
+  font-family: var(--font-sans-stack);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 a {
