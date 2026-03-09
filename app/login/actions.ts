@@ -6,7 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 function getString(formData: FormData, key: string) {
   const value = formData.get(key);
-  return typeof value === "string" ? value : "";
+  return typeof value === "string" ? value.trim() : "";
 }
 
 export async function login(formData: FormData) {
@@ -31,7 +31,7 @@ export async function signup(formData: FormData) {
   const siteUrl = await getRequestSiteUrl();
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -41,6 +41,10 @@ export async function signup(formData: FormData) {
 
   if (error) {
     redirect(`/login?error=${encodeURIComponent(error.message)}`);
+  }
+
+  if (data.session) {
+    redirect(nextPath);
   }
 
   redirect("/login?message=Check your email to confirm your account.");

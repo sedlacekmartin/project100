@@ -38,19 +38,22 @@ alter table public.activities enable row level security;
 alter table public.attempts enable row level security;
 alter table public.logs enable row level security;
 
-create policy if not exists "Users can manage own activities"
+drop policy if exists "Users can manage own activities" on public.activities;
+create policy "Users can manage own activities"
 on public.activities
 for all
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
 
-create policy if not exists "Users can manage own attempts"
+drop policy if exists "Users can manage own attempts" on public.attempts;
+create policy "Users can manage own attempts"
 on public.attempts
 for all
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
 
-create policy if not exists "Users can manage own logs"
+drop policy if exists "Users can manage own logs" on public.logs;
+create policy "Users can manage own logs"
 on public.logs
 for all
 using (auth.uid() = user_id)
