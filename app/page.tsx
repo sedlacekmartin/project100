@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 type Intent = "good" | "risky";
@@ -89,7 +90,7 @@ export default function HomePage() {
   const [timerRunning, setTimerRunning] = useState(false);
   const [slowMode, setSlowMode] = useState(false);
   const [lastAction, setLastAction] = useState("Tap any control to simulate app behavior.");
-  const [mood, setMood] = useState("🙂");
+  const [mood, setMood] = useState("Good");
 
   const selected = useMemo(
     () => activities.find((activity) => activity.id === selectedId) ?? activities[0],
@@ -180,6 +181,18 @@ export default function HomePage() {
                     {value === "home" ? "Home Preview" : value === "detail" ? "Detail Preview" : "Log Preview"}
                   </button>
                 ))}
+                <Link
+                  href="/login"
+                  className="rounded-2xl border border-slate-200 bg-white/90 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/dashboard"
+                  className="rounded-2xl border border-slate-200 bg-white/90 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Dashboard
+                </Link>
               </div>
             </div>
 
@@ -607,14 +620,14 @@ export default function HomePage() {
                 </div>
                 <p className="mt-5 text-sm font-semibold text-slate-900">How do you feel?</p>
                 <div className="mt-3 flex gap-2">
-                  {["😞", "😐", "🙂", "🔥"].map((icon) => (
+                  {["Low", "Neutral", "Good", "High"].map((icon) => (
                     <button
                       key={icon}
                       onClick={() => {
                         setMood(icon);
                         setLastAction(`Mood saved: ${icon}. Correlation updated in analytics (demo).`);
                       }}
-                      className={`rounded-xl px-3 py-2 text-xl ${mood === icon ? "bg-slate-900 text-white" : "bg-slate-100"}`}
+                      className={`rounded-xl px-3 py-2 text-sm font-semibold ${mood === icon ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-800"}`}
                     >
                       {icon}
                     </button>
