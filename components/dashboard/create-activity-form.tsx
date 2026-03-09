@@ -10,7 +10,7 @@ export function CreateActivityForm() {
             name="title"
             required
             placeholder="Water, Walk, Cigarettes..."
-            className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-slate-400"
+            className="ios-input px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[rgba(110,168,255,0.55)]"
           />
         </label>
         <label className="grid gap-1.5 text-sm text-slate-700">
@@ -19,7 +19,7 @@ export function CreateActivityForm() {
             name="unit"
             required
             placeholder="glasses, km, reps, cigs"
-            className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-slate-400"
+            className="ios-input px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[rgba(110,168,255,0.55)]"
           />
         </label>
       </div>
@@ -30,7 +30,7 @@ export function CreateActivityForm() {
           <select
             name="intent"
             defaultValue="good"
-            className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-slate-400"
+            className="ios-input px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[rgba(110,168,255,0.55)]"
           >
             <option value="good">Positive habit</option>
             <option value="risky">Harm reduction</option>
@@ -43,12 +43,12 @@ export function CreateActivityForm() {
             type="number"
             min={1}
             defaultValue={100}
-            className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-slate-400"
+            className="ios-input px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[rgba(110,168,255,0.55)]"
           />
         </label>
       </div>
 
-      <button className="rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white">
+      <button className="ios-button shine bg-[linear-gradient(135deg,#8bb6ff,#8e88ff_58%,#f2c96d)] px-4 py-3 text-sm font-semibold text-slate-950">
         Create activity and first attempt
       </button>
     </form>

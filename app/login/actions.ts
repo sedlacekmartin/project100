@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { getRequestSiteUrl } from "@/lib/site-url";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 function getString(formData: FormData, key: string) {
@@ -26,9 +27,17 @@ export async function login(formData: FormData) {
 export async function signup(formData: FormData) {
   const email = getString(formData, "email");
   const password = getString(formData, "password");
+  const nextPath = getString(formData, "next") || "/dashboard";
+  const siteUrl = await getRequestSiteUrl();
 
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signUp({ email, password });
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${siteUrl}/auth/confirm?next=${encodeURIComponent(nextPath)}`,
+    },
+  });
 
   if (error) {
     redirect(`/login?error=${encodeURIComponent(error.message)}`);

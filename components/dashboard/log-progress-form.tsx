@@ -17,7 +17,7 @@ export function LogProgressForm({
             type="submit"
             name="delta"
             value={delta}
-            className={`rounded-xl px-3 py-2 text-sm font-semibold text-white ${accentClassName}`}
+            className={`ios-button px-4 py-2.5 text-sm font-semibold text-white ${accentClassName}`}
           >
             +{delta}
           </button>
@@ -28,14 +28,14 @@ export function LogProgressForm({
         <input
           name="mood"
           placeholder="optional: calm, stressed, tired..."
-          className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-slate-400"
+          className="ios-input px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[rgba(110,168,255,0.55)]"
         />
       </label>
       <button
         type="submit"
         name="delta"
         value={1}
-        className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-800"
+        className="ios-button border border-[rgba(160,177,217,0.28)] bg-white/90 px-4 py-2.5 text-sm font-semibold text-slate-800"
       >
         Save custom mood with +1
       </button>
