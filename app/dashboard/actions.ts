@@ -2,8 +2,19 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
+import type { DashboardActionState } from "@/components/dashboard/action-state";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseConfig } from "@/lib/supabase/config";
+
+type RequireUserResult =
+  | {
+      error: string;
+    }
+  | {
+      supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>;
+      user: User;
+    };
 
 function getString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -15,9 +26,9 @@ function getNumber(formData: FormData, key: string) {
   return Number.isFinite(value) ? value : 0;
 }
 
-async function requireUser() {
+async function requireUser(): Promise<RequireUserResult> {
   if (!hasSupabaseConfig()) {
-    redirect("/dashboard?error=Missing Supabase configuration.");
+    return { error: "Missing Supabase configuration." as string };
   }
 
   const supabase = await createSupabaseServerClient();
@@ -32,8 +43,12 @@ async function requireUser() {
   return { supabase, user };
 }
 
-function dashboardRedirect(search: string): never {
-  redirect(`/dashboard${search}`);
+function success(message: string): DashboardActionState {
+  return { status: "success", message };
+}
+
+function failure(message: string): DashboardActionState {
+  return { status: "error", message };
 }
 
 export async function signOut() {
@@ -42,15 +57,23 @@ export async function signOut() {
   redirect("/login?message=Signed out.");
 }
 
-export async function createActivity(formData: FormData) {
-  const { supabase, user } = await requireUser();
+export async function createActivity(
+  _previousState: DashboardActionState,
+  formData: FormData,
+): Promise<DashboardActionState> {
+  const auth = await requireUser();
+  if ("error" in auth) {
+    return failure(auth.error);
+  }
+
+  const { supabase, user } = auth;
   const title = getString(formData, "title");
   const unit = getString(formData, "unit");
   const intent = getString(formData, "intent");
   const targetValue = Math.max(1, getNumber(formData, "targetValue") || 100);
 
   if (!title || !unit || (intent !== "good" && intent !== "risky")) {
-    dashboardRedirect("?error=Fill in title, unit, and intent.");
+    return failure("Fill in title, unit, and intent.");
   }
 
   const { data: activity, error: activityError } = await supabase
@@ -66,7 +89,7 @@ export async function createActivity(formData: FormData) {
     .single();
 
   if (activityError || !activity) {
-    dashboardRedirect(`?error=${encodeURIComponent(activityError?.message ?? "Could not create activity.")}`);
+    return failure(activityError?.message ?? "Could not create activity.");
   }
 
   const { error: attemptError } = await supabase.from("attempts").insert({
@@ -77,15 +100,23 @@ export async function createActivity(formData: FormData) {
   });
 
   if (attemptError) {
-    dashboardRedirect(`?error=${encodeURIComponent(attemptError.message)}`);
+    return failure(attemptError.message);
   }
 
   revalidatePath("/dashboard");
-  dashboardRedirect("?message=Activity created.");
+  return success("Activity created.");
 }
 
-export async function logProgress(formData: FormData) {
-  const { supabase, user } = await requireUser();
+export async function logProgress(
+  _previousState: DashboardActionState,
+  formData: FormData,
+): Promise<DashboardActionState> {
+  const auth = await requireUser();
+  if ("error" in auth) {
+    return failure(auth.error);
+  }
+
+  const { supabase, user } = auth;
   const attemptId = getString(formData, "attemptId");
   const delta = Math.max(1, getNumber(formData, "delta"));
   const mood = getString(formData, "mood") || null;
@@ -99,7 +130,7 @@ export async function logProgress(formData: FormData) {
     .single();
 
   if (attemptError || !attempt) {
-    dashboardRedirect(`?error=${encodeURIComponent(attemptError?.message ?? "Active attempt not found.")}`);
+    return failure(attemptError?.message ?? "Active attempt not found.");
   }
 
   const nextValue = Math.min(attempt.target_value, attempt.current_value + delta);
@@ -112,7 +143,7 @@ export async function logProgress(formData: FormData) {
   });
 
   if (logError) {
-    dashboardRedirect(`?error=${encodeURIComponent(logError.message)}`);
+    return failure(logError.message);
   }
 
   const updatePayload: {
@@ -133,19 +164,23 @@ export async function logProgress(formData: FormData) {
     .eq("user_id", user.id);
 
   if (updateError) {
-    dashboardRedirect(`?error=${encodeURIComponent(updateError.message)}`);
+    return failure(updateError.message);
   }
 
   revalidatePath("/dashboard");
-  dashboardRedirect(
-    `?message=${encodeURIComponent(
-      nextValue >= attempt.target_value ? "Attempt completed at 100." : `Logged +${delta}.`,
-    )}`,
-  );
+  return success(nextValue >= attempt.target_value ? "Attempt completed at 100." : `Logged +${delta}.`);
 }
 
-export async function startNextAttempt(formData: FormData) {
-  const { supabase, user } = await requireUser();
+export async function startNextAttempt(
+  _previousState: DashboardActionState,
+  formData: FormData,
+): Promise<DashboardActionState> {
+  const auth = await requireUser();
+  if ("error" in auth) {
+    return failure(auth.error);
+  }
+
+  const { supabase, user } = auth;
   const activityId = getString(formData, "activityId");
 
   const { data: activity, error: activityError } = await supabase
@@ -156,7 +191,7 @@ export async function startNextAttempt(formData: FormData) {
     .single();
 
   if (activityError || !activity) {
-    dashboardRedirect(`?error=${encodeURIComponent(activityError?.message ?? "Activity not found.")}`);
+    return failure(activityError?.message ?? "Activity not found.");
   }
 
   const { data: existingAttempt } = await supabase
@@ -168,7 +203,7 @@ export async function startNextAttempt(formData: FormData) {
     .maybeSingle();
 
   if (existingAttempt) {
-    dashboardRedirect("?error=This activity already has an active attempt.");
+    return failure("This activity already has an active attempt.");
   }
 
   const { error } = await supabase.from("attempts").insert({
@@ -179,9 +214,9 @@ export async function startNextAttempt(formData: FormData) {
   });
 
   if (error) {
-    dashboardRedirect(`?error=${encodeURIComponent(error.message)}`);
+    return failure(error.message);
   }
 
   revalidatePath("/dashboard");
-  dashboardRedirect("?message=New attempt started.");
+  return success("New attempt started.");
 }
