@@ -1,9 +1,17 @@
 "use client";
 
-import { useActionState, useEffect, useRef, startTransition } from "react";
+import { useActionState, useEffect, useRef, startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { logProgress } from "@/app/dashboard/actions";
 import { initialDashboardActionState } from "@/components/dashboard/action-state";
+
+const moodOptions = [
+  { value: "excited", emoji: "🤩", label: "Excited" },
+  { value: "good", emoji: "😊", label: "Good" },
+  { value: "neutral", emoji: "😐", label: "Neutral" },
+  { value: "low", emoji: "🙁", label: "Low" },
+  { value: "sad", emoji: "😞", label: "Sad" },
+];
 
 export function LogProgressForm({
   attemptId,
@@ -14,6 +22,7 @@ export function LogProgressForm({
 }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const [selectedMood, setSelectedMood] = useState("neutral");
   const [state, formAction, isPending] = useActionState(
     logProgress,
     initialDashboardActionState,
@@ -24,11 +33,6 @@ export function LogProgressForm({
       return;
     }
 
-    const moodInput = formRef.current?.elements.namedItem("mood");
-    if (moodInput instanceof HTMLInputElement) {
-      moodInput.value = "";
-    }
-
     startTransition(() => {
       router.refresh();
     });
@@ -37,6 +41,7 @@ export function LogProgressForm({
   return (
     <form ref={formRef} action={formAction} className="mt-4 grid gap-2">
       <input type="hidden" name="attemptId" value={attemptId} />
+      <input type="hidden" name="mood" value={selectedMood} />
       <div className="flex flex-wrap gap-2">
         {[1, 5, 10].map((delta) => (
           <button
@@ -51,14 +56,32 @@ export function LogProgressForm({
           </button>
         ))}
       </div>
-      <label className="grid gap-1.5 text-sm text-slate-700">
-        <span className="font-medium">Mood note</span>
-        <input
-          name="mood"
-          placeholder="optional: calm, stressed, tired..."
-          className="ios-input px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[rgba(110,168,255,0.55)]"
-        />
-      </label>
+
+      <div className="grid gap-1.5 text-sm text-slate-700">
+        <span className="font-medium">Mood</span>
+        <div className="grid grid-cols-5 gap-2">
+          {moodOptions.map((option) => {
+            const isSelected = selectedMood === option.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setSelectedMood(option.value)}
+                className={`ios-button flex flex-col items-center gap-1 px-2 py-3 text-center transition ${
+                  isSelected
+                    ? "bg-[linear-gradient(135deg,#8bb6ff,#8e88ff_58%,#f2c96d)] text-slate-950"
+                    : "border border-[rgba(160,177,217,0.28)] bg-white/90 text-slate-700"
+                }`}
+                aria-pressed={isSelected}
+                title={option.label}
+              >
+                <span className="text-xl leading-none">{option.emoji}</span>
+                <span className="text-[11px] font-medium">{option.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {state.message ? (
         <p
@@ -79,7 +102,7 @@ export function LogProgressForm({
         disabled={isPending}
         className="ios-button border border-[rgba(160,177,217,0.28)] bg-white/90 px-4 py-2.5 text-sm font-semibold text-slate-800 disabled:opacity-60"
       >
-        {isPending ? "Saving..." : "Save custom mood with +1"}
+        {isPending ? "Saving..." : "Save mood and +1"}
       </button>
     </form>
   );
